@@ -1,0 +1,80 @@
+[
+  {
+    "model": "book.category",
+    "pk": 1,
+    "fields": {
+      "name": "Science Fiction"
+    }
+  },
+  {
+    "model": "book.category",
+    "pk": 2,
+    "fields": {
+      "name": "Fantasy"
+    }
+  },
+  {
+    "model": "book.category",
+    "pk": 3,
+    "fields": {
+      "name": "History"
+    }
+  },
+  {
+    "model": "book.author",
+    "pk": 1,
+    "fields": {
+      "name": "Isaac Asimov",
+      "biography": "Isaac Asimov was a prolific science fiction writer and professor of biochemistry."
+    }
+  },
+  {
+    "model": "book.author",
+    "pk": 2,
+    "fields": {
+      "name": "J.R.R. Tolkien",
+      "biography": "J.R.R. Tolkien was an English writer and philologist best known for The Lord of the Rings."
+    }
+  },
+  {
+    "model": "book.author",
+    "pk": 3,
+    "fields": {
+      "name": "Yuval Noah Harari",
+      "biography": "Yuval Noah Harari is an Israeli public intellectual, historian, and professor."
+    }
+  },
+  {
+    "model": "book.book",
+    "pk": 1,
+    "fields": {
+      "title": "Foundation",
+      "author": 1,
+      "category": 1,
+      "isbn": "9780451457998",
+      "availability_status": true
+    }
+  },
+  {
+    "model": "book.book",
+    "pk": 2,
+    "fields": {
+      "title": "The Hobbit",
+      "author": 2,
+      "category": 2,
+      "isbn": "9780345339683",
+      "availability_status": true
+    }
+  },
+  {
+    "model": "book.book",
+    "pk": 3,
+    "fields": {
+      "title": "Sapiens: A Brief History of Humankind",
+      "author": 3,
+      "category": 3,
+      "isbn": "9780062316097",
+      "availability_status": true
+    }
+  }
+]
