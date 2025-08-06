@@ -37,6 +37,13 @@ class Member(models.Model):
 
 
 class BorrowRecord(models.Model):
+    BORROWED = 'Borrowed'
+    RETURNED = 'Returned'
+    STATUS_CHOICES = [
+    ('BORROWED', 'Borrowed'),
+    ('RETURNED', 'Returned'),
+    ]
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='BORROWED')
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='borrow_records')
     member = models.ForeignKey(Member, on_delete=models.CASCADE)
     borrow_date = models.DateField(auto_now_add=True)

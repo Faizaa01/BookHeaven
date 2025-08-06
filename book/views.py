@@ -1,7 +1,6 @@
 from rest_framework import status
 from django.db.models import Count
 from rest_framework.response import Response
-from api.permissions import IsAdminOrReadOnly
 from book.paginations import DefaultPagination
 # from drf_yasg.utils import swagger_auto_schema
 from rest_framework.viewsets import ModelViewSet
@@ -10,7 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from book.models import Author, Book, BorrowRecord, Member, Category
-from book.serializers import AuthorSerializer, BookSerializer, BorrowRecordSerializer, CategorySerializer, MemberSerializer
+from book.serializers import AuthorSerializer, BookSerializer, BorrowRecordSerializer, CategorySerializer, MemberSerializer, UpdateBorrowRecordSerializer
 
 
 
@@ -21,6 +20,10 @@ class BookViewSet(ModelViewSet):
     pagination_class = DefaultPagination
     search_fields = ['title', 'author__name', 'category__name']
     ordering_fields = ['availability_status']
+    def get_permissions(self):
+        if self.action in ['create', 'update_status', 'destroy']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
 
     def create(self, request, *args, **kwargs):
         if Book.objects.filter(title=request.data.get('title')).exists():
@@ -33,6 +36,11 @@ class AuthorViewSet(ModelViewSet):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
 
+    def get_permissions(self):
+        if self.action in ['create', 'update_status', 'destroy']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
+
     def create(self, request, *args, **kwargs):
         if Author.objects.filter(name__iexact=request.data.get('name')).exists():
             return Response({"detail": "Author with this name already exists."}, status=status.HTTP_400_BAD_REQUEST)
@@ -40,10 +48,21 @@ class AuthorViewSet(ModelViewSet):
 
 
 class BorrowRecordViewSet(ModelViewSet):
-    serializer_class = BorrowRecordSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.action in ['update']:
+            return UpdateBorrowRecordSerializer
+        return BorrowRecordSerializer
 
     def get_queryset(self):
-        return BorrowRecord.objects.filter(member__user=self.request.user).select_related('book', 'member')
+        if getattr(self, 'swagger_fake_view', False):
+            return BorrowRecord.objects.none()
+
+        user = self.request.user
+        if user.is_staff:
+            return BorrowRecord.objects.select_related('book', 'member', 'member__user')
+        return BorrowRecord.objects.select_related('book', 'member', 'member__user').filter(member__user=user)   
 
     def perform_create(self, serializer):
         member = self.request.user.member
@@ -64,12 +83,18 @@ class BorrowRecordViewSet(ModelViewSet):
             if not instance.book.availability_status:
                 instance.book.availability_status = True
                 instance.book.save()
-
+            instance.status = 'RETURNED'
+            instance.save()
 
 
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.annotate(book_count=Count('books')).all() 
     serializer_class = CategorySerializer
+
+    def get_permissions(self):
+        if self.action in ['create', 'update_status', 'destroy']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
 
     def create(self, request, *args, **kwargs):
         if Category.objects.filter(name__iexact=request.data.get('name')).exists():
@@ -81,19 +106,10 @@ class CategoryViewSet(ModelViewSet):
 class MemberViewSet(ModelViewSet):
     queryset = Member.objects.select_related('user').all()
     serializer_class = MemberSerializer
-
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy', 'list']:
-            permission_classes = [IsAdminUser]
-        else:
-            permission_classes = [IsAuthenticated]
-        return [permission() for permission in permission_classes]
-
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_staff:
-            return Member.objects.select_related('user').all()
-        return Member.objects.filter(user=user)
+        if self.action in ['create', 'destroy']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
 
     def perform_create(self, serializer):
         serializer.save()
