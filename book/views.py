@@ -14,7 +14,7 @@ from book.serializers import AuthorSerializer, BookSerializer, BorrowRecordSeria
 
 
 class BookViewSet(ModelViewSet):
-    queryset = Book.objects.all()
+    queryset = Book.objects.select_related('author', 'category').all()
     serializer_class = BookSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     pagination_class = DefaultPagination

@@ -14,11 +14,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#qq+b#67nkf(p&^jgp1r-sc7xt^_p!l&%6aglc)5^$y5-=j!uo'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [".vercel.app", '127.0.0.1']
 
 AUTH_USER_MODEL  = 'users.User'
 
@@ -78,7 +78,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'BookHeaven.wsgi.application'
+WSGI_APPLICATION = 'BookHeaven.wsgi.app'
 
 
 
