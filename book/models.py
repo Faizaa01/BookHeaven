@@ -25,6 +25,9 @@ class Book(models.Model):
     isbn = models.CharField(max_length=13, unique=True, help_text="Unique 10 or 13-digit ISBN.")
     availability_status = models.BooleanField(default=True, help_text="True if available for borrowing.")
 
+    class Meta:
+        ordering = ['availability_status', 'title']
+
     def __str__(self):
         return self.title
     
