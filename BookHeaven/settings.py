@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'drf_yasg',
     'django_filters',
+    "corsheaders",
     'rest_framework',
     'djoser',
     'api',
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     # "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -52,7 +54,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
 
 
 INTERNAL_IPS = [
@@ -83,7 +84,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'BookHeaven.wsgi.app'
 
 
-
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173', 
+] 
 
 # DATABASES = {
 #     'default': {

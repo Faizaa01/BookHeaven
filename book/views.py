@@ -1,5 +1,7 @@
 from rest_framework import status
+from django.utils import timezone
 from django.db.models import Count
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from book.paginations import DefaultPagination
 # from drf_yasg.utils import swagger_auto_schema
@@ -9,7 +11,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from book.models import Author, Book, BorrowRecord, Member, Category
-from book.serializers import AuthorSerializer, BookSerializer, BorrowRecordSerializer, CategorySerializer, MemberSerializer, UpdateBorrowRecordSerializer
+from book.serializers import AuthorSerializer, BookSerializer, BorrowRecordSerializer, CategorySerializer, MemberSerializer
 
 
 
@@ -20,16 +22,54 @@ class BookViewSet(ModelViewSet):
     pagination_class = DefaultPagination
     search_fields = ['title', 'author__name', 'category__name']
     ordering_fields = ['availability_status']
+
     def get_permissions(self):
         if self.action in ['create', 'update_status', 'destroy']:
             return [IsAdminUser()]
         return [IsAuthenticated()]
 
-    def create(self, request, *args, **kwargs):
-        if Book.objects.filter(title=request.data.get('title')).exists():
-            return Response({"detail": "Book already exists."}, status=status.HTTP_400_BAD_REQUEST)
-        return super().create(request, *args, **kwargs)
+    @action(detail=True, methods=['post'], url_path='borrow')
+    def borrow(self, request, pk=None):
+        book = self.get_object()
+        member = request.user.member
 
+        if BorrowRecord.objects.filter(book=book, member=member, return_date__isnull=True).exists():
+            return Response({"error": "You already borrowed this book and didn't return it"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not book.availability_status:
+            return Response({"error": "Book is currently not available"}, status=status.HTTP_400_BAD_REQUEST)
+
+        planned_return_date = request.data.get('planned_return_date')
+
+        borrow_record = BorrowRecord.objects.create(
+            book=book,
+            member=member,
+            return_date=planned_return_date if planned_return_date else None,
+            status='BORROWED'
+        )
+        book.availability_status = False
+        book.save()
+        serializer = BorrowRecordSerializer(borrow_record)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'], url_path='return')
+    def return_book(self, request, pk=None):
+        book = self.get_object()
+        member = request.user.member
+
+        try:
+            borrow_record = BorrowRecord.objects.get(book=book, member=member, return_date__isnull=True)
+        except BorrowRecord.DoesNotExist:
+            return Response({"error": "You have no active borrow for this book"}, status=status.HTTP_404_NOT_FOUND)
+
+        borrow_record.return_date = timezone.now()
+        borrow_record.status = 'RETURNED'
+        borrow_record.save()
+        book.availability_status = True
+        book.save()
+
+        serializer = BorrowRecordSerializer(borrow_record)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class AuthorViewSet(ModelViewSet):
@@ -49,11 +89,6 @@ class AuthorViewSet(ModelViewSet):
 
 class BorrowRecordViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
-
-    def get_serializer_class(self):
-        if self.action in ['update']:
-            return UpdateBorrowRecordSerializer
-        return BorrowRecordSerializer
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
@@ -113,3 +148,5 @@ class MemberViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save()
+
+

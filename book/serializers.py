@@ -45,11 +45,6 @@ class MemberSerializer(serializers.ModelSerializer):
         fields = ['id' , 'user', 'name', 'email', 'membership_date']
 
 
-class UpdateBorrowRecordSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BorrowRecord
-        fields = ['status']
-
 class BorrowRecordSerializer(serializers.ModelSerializer):
     status = serializers.CharField(read_only=True)
     member = MemberSerializer(read_only=True)
