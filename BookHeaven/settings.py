@@ -7,9 +7,9 @@ from cloudinary.utils import cloudinary_url
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = config('SECRET_KEY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
+SECRET_KEY = 'django-insecure-#qq+b#67nkf(p&^jgp1r-sc7xt^_p!l&%6aglc)5^$y5-=j!uo'
+
 DEBUG = False
 
 
