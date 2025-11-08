@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from cloudinary.models import CloudinaryField
 
 
 class Category(models.Model):
@@ -26,6 +27,10 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+    
+class BookImage(models.Model):
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='images')
+    image = CloudinaryField('image')
 
 
 class Member(models.Model):

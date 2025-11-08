@@ -2,13 +2,13 @@ from decimal import Decimal
 from django.conf import settings
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from book.models import Author, Book, BorrowRecord, Category, Member
+from book.models import Author, Book, BorrowRecord, Category, Member, BookImage
 
 User = get_user_model()
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    book_count = serializers.IntegerField(read_only=True, help_text="Return the number product in this category")
+    book_count = serializers.IntegerField(read_only=True, help_text="Return the number book in this category")
 
     class Meta:
         model = Category
@@ -33,6 +33,13 @@ class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = ['id', 'title', 'author', 'isbn','author_id', 'category', 'category_id','availability_status']
+
+
+class BookImageSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField()
+    class Meta:
+        model = BookImage
+        fields = ['id', 'image']
 
 
 class MemberSerializer(serializers.ModelSerializer):

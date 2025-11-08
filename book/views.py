@@ -4,12 +4,12 @@ from django.db.models import Count
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
-from book.models import Author, Book, BorrowRecord, Member, Category
-from book.serializers import AuthorSerializer, BookSerializer, BorrowRecordSerializer, CategorySerializer, MemberSerializer
+from book.models import Author, Book, BorrowRecord, Member, Category, BookImage
+from book.serializers import AuthorSerializer, BookSerializer, BorrowRecordSerializer, CategorySerializer, MemberSerializer, BookImageSerializer
 from book.paginations import DefaultPagination
 
 class BookViewSet(ModelViewSet):
@@ -72,6 +72,19 @@ class BookViewSet(ModelViewSet):
 
         serializer = BorrowRecordSerializer(borrow_record)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+class BookImageViewSet(ModelViewSet):
+    permission_classes = [IsAdminUser]
+    serializer_class = BookImageSerializer
+
+    def get_queryset(self):
+        return BookImage.objects.filter(book_id=self.kwargs.get('book_pk'))
+    
+    def perform_create(self, serializer):
+        serializer.save(book_id=self.kwargs.get('book_pk'))
+
 
 
 class AuthorViewSet(ModelViewSet):

@@ -1,9 +1,11 @@
 from drf_yasg import openapi
+from django.conf import settings
 from django.contrib import admin
 from .views import api_root_view
 from django.urls import path, include
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
+from django.conf.urls.static import static
 # from debug_toolbar.toolbar import debug_toolbar_urls
 
 
@@ -33,3 +35,4 @@ urlpatterns = [
 
 ]
 # + debug_toolbar_urls()
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
