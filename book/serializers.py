@@ -22,9 +22,18 @@ class AuthorSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'biography']
 
 
+class BookImageSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField()
+    class Meta:
+        model = BookImage
+        fields = ['id', 'image']
+
+
+
 class BookSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     category = CategorySerializer(read_only=True)
+    images = BookImageSerializer(many=True, read_only=True)
     author_id = serializers.PrimaryKeyRelatedField(
         queryset=Author.objects.all(), write_only=True, source='author')
     category_id = serializers.PrimaryKeyRelatedField(
@@ -32,14 +41,8 @@ class BookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Book
-        fields = ['id', 'title', 'author', 'isbn','author_id', 'category', 'category_id','availability_status']
+        fields = ['id', 'images', 'title', 'author', 'isbn','author_id', 'category', 'category_id','availability_status']
 
-
-class BookImageSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField()
-    class Meta:
-        model = BookImage
-        fields = ['id', 'image']
 
 
 class MemberSerializer(serializers.ModelSerializer):
