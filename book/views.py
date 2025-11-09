@@ -16,9 +16,10 @@ class BookViewSet(ModelViewSet):
     queryset = Book.objects.select_related('author', 'category').all()
     serializer_class = BookSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['category', 'author', 'availability_status']
     pagination_class = DefaultPagination
-    search_fields = ['title', 'author__name', 'category__name']
-    ordering_fields = ['availability_status']
+    search_fields = ['title', 'author__name']
+    ordering_fields = ['availability_status', 'title']
 
     def get_permissions(self):
         if self.action in ['create', 'update_status', 'destroy']:
