@@ -59,14 +59,12 @@ class BorrowRecordSerializer(serializers.ModelSerializer):
     status = serializers.CharField(read_only=True)
     member = MemberSerializer(read_only=True)
     book = BookSerializer(read_only=True)
+    display_date = serializers.SerializerMethodField()
 
     class Meta:
         model = BorrowRecord
-        fields = ['id', 'book', 'member', 'borrow_date', 'return_date', 'status']
+        fields = ['id', 'book', 'member', 'borrow_date', 'return_date', 'status', 'display_date']
 
-    def validate(self, attrs):
-        book = attrs.get('book')
-        if not book.availability_status:
-            raise serializers.ValidationError("This book is currently not available for borrowing.")
-        return attrs
+    def get_display_date(self, obj):
+        return obj.return_date if obj.status == 'RETURNED' else obj.borrow_date
 

@@ -33,19 +33,14 @@ class BookViewSet(ModelViewSet):
         book = self.get_object()
         member = request.user.member
 
-        if BorrowRecord.objects.filter(book=book, member=member, return_date__isnull=True).exists():
-            return Response({"error": "You already borrowed this book and didn't return it"},
-                            status=status.HTTP_400_BAD_REQUEST)
-
+        if BorrowRecord.objects.filter(book=book, member=member, status="BORROWED").exists():
+            return Response({"error": "You already borrowed this book"}, status=status.HTTP_400_BAD_REQUEST)
         if not book.availability_status:
             return Response({"error": "Book is currently not available"}, status=status.HTTP_400_BAD_REQUEST)
-
-        planned_return_date = request.data.get('planned_return_date')
 
         borrow_record = BorrowRecord.objects.create(
             book=book,
             member=member,
-            return_date=planned_return_date if planned_return_date else None,
             status='BORROWED'
         )
 
@@ -60,17 +55,19 @@ class BookViewSet(ModelViewSet):
         member = request.user.member
 
         try:
-            borrow_record = BorrowRecord.objects.get(book=book, member=member, return_date__isnull=True)
+            borrow_record = BorrowRecord.objects.get(book=book, member=member, status='BORROWED')
         except BorrowRecord.DoesNotExist:
             return Response({"error": "You have no active borrow for this book"}, status=status.HTTP_404_NOT_FOUND)
-
-        borrow_record.return_date = timezone.now()
-        borrow_record.status = 'RETURNED'
-        borrow_record.save()
+        BorrowRecord.objects.create(
+            book=book,
+            member=member,
+            status='RETURNED',
+            borrow_date=borrow_record.borrow_date,
+            return_date=timezone.now()
+        )
 
         book.availability_status = True
         book.save()
-
         serializer = BorrowRecordSerializer(borrow_record)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
