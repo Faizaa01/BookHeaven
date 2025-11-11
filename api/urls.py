@@ -16,4 +16,6 @@ book_router.register('images', BookImageViewSet, basename='book-images')
 urlpatterns = [
     path('', include(router.urls)),
     path('', include(book_router.urls)),
+    path('auth/', include('djoser.urls')),
+    path('auth/', include('djoser.urls.jwt')),
 ]
