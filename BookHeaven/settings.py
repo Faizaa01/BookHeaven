@@ -81,7 +81,8 @@ WSGI_APPLICATION = 'BookHeaven.wsgi.app'
 
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173', 
+    'http://localhost:5173',
+    'https://book-heaven-client-xi.vercel.app',
 ] 
 
 # DATABASES = {
